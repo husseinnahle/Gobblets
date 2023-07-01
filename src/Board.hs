@@ -1,7 +1,7 @@
 module Board (Board, newBoard, emptyPositions, canInsertPiece, getPiecesOnBoard, getPiece, insertPiece, movePiece, getAlignments, filterAlignmentsByColor, Position, showPosition, boardHasWinner, getPlayerScore) where
 
 
-import Deck (Color(..), Size(..), Piece, size, color)
+import Deck (Color(..), Piece, size, color)
 import Data.List (intercalate)
 
 
@@ -9,7 +9,7 @@ type Cell = [Piece]
 
 showCell :: Cell -> String
 showCell [] = "__"
-showCell (x:xs) = show x
+showCell (x:_) = show x
 
 isEmpty :: Cell -> Bool
 isEmpty [] = True
@@ -17,7 +17,7 @@ isEmpty _  = False
 
 getPieceInCell :: Cell -> Maybe Piece
 getPieceInCell [] = Nothing
-getPieceInCell (x:xs) = Just x
+getPieceInCell (x:_) = Just x
 
 getPieceInCellByColor :: Color -> Cell -> Maybe Piece
 getPieceInCellByColor _ [] = Nothing
@@ -26,19 +26,21 @@ getPieceInCellByColor c (x:xs)
   | otherwise = getPieceInCellByColor c xs 
 
 canInsertPieceInCell :: Cell -> Piece -> Bool
-canInsertPieceInCell cell newPiece
-  | cell == [] = True
-  | (size pieceInCell) < (size newPiece) = True
-  | otherwise = False
-    where
-      Just pieceInCell = getPieceInCell cell
+canInsertPieceInCell cell newPiece =
+  case getPieceInCell cell of
+    Nothing -> True
+    Just piece ->
+      if size piece < size newPiece then
+        True
+      else
+        False
 
 insertPieceInCell :: Cell -> Piece -> Cell
 insertPieceInCell cell piece = piece:cell 
 
 removePieceFromCell :: Cell -> Cell
 removePieceFromCell [] = []
-removePieceFromCell (x:xs) = xs
+removePieceFromCell (_:xs) = xs
 
 
 type Position = (Int, Int)
@@ -56,7 +58,7 @@ instance Show Board where
 
       getRows :: [Cell] -> [String]
       getRows [] = []
-      getRows cells = showRow (take 4 cells) : getRows (drop 4 cells)
+      getRows cs = showRow (take 4 cs) : getRows (drop 4 cs)
 
       showRow :: [Cell] -> String
       showRow row = concat (replicate 20 " ") ++ intercalate " " (map showCell row)
@@ -65,11 +67,13 @@ newBoard :: Board
 newBoard = Board ([([], (x, y)) | x <- [0..3], y <- [0..3]])
 
 getCell :: Board -> Position -> Cell
+getCell (Board []) _ = error "Board is empty"
 getCell (Board ((cell, current): xs)) position
   | position == current = cell
   | otherwise           = getCell (Board xs) position
 
 setCell :: Board -> Position -> Cell -> Board
+setCell (Board []) _ _ = error "Board is empty"
 setCell (Board ((cell, current):xs)) position newCell
   | position == current = Board ((newCell, current):xs)
   | otherwise = Board ((cell, current):rest)
@@ -93,13 +97,14 @@ canInsertPiece board position piece = canInsertPieceInCell cell piece
     cell = getCell board position
 
 movePiece :: Board -> Position -> Position -> Board
-movePiece b p1 p2 = boardAfterMove
-  where
-    cell = getCell b p1 
-    Just pieceToMove = getPieceInCell cell
-    newCell = removePieceFromCell cell
-    boardAfterRemove = setCell b p1 newCell
-    boardAfterMove = insertPiece boardAfterRemove pieceToMove p2
+movePiece b p1 p2 = 
+  case getPieceInCell cell of
+    Nothing -> b
+    Just pieceToMove -> insertPiece boardAfterRemove pieceToMove p2
+    where
+      cell = getCell b p1 
+      newCell = removePieceFromCell cell
+      boardAfterRemove = setCell b p1 newCell
 
 emptyPositions :: Board -> [Position]
 emptyPositions (Board board) = map snd $ filter (isEmpty . fst) board
@@ -136,15 +141,21 @@ getAlignments board = map check (getLines board)
         cy = getColor y
         cz = getColor z
         cw = getColor w
+    check _ = []
 
 filterAlignmentsByColor :: [[(Cell, Position)]] -> Color -> [[(Cell, Position)]]
 filterAlignmentsByColor [] _ = []
 filterAlignmentsByColor alignments c = map (filter (sameColor c . fst)) alignments
   where
     sameColor :: Color -> Cell -> Bool
-    sameColor c cell
-      | Just piece <- getPieceInCell cell, c == (color piece) = True
-      | otherwise = False
+    sameColor otherColor cell =
+      case getPieceInCell cell of
+        Nothing -> False
+        Just piece ->
+          if otherColor == (color piece) then
+            True
+          else
+            False
 
 -- Ancienne implémentation pour chercher le score d'une grille mais qui ne prend pas en conidération les pièces recouvertes
 -- getScore :: Board -> Color -> Int
@@ -171,10 +182,21 @@ getLineScore c cells = countScore (map (getPieceInCellByColor c) cells) 0
     countScore [] counter
       | counter >= 2 = counter
       | otherwise = 0
-    countScore (x:xs) counter
-      | Just mx <- x, (color mx) == c = countScore xs (counter + 1)
-      | counter >= 2 = counter
-      | otherwise = countScore xs 0
+    countScore (x:xs) counter =
+      case x of
+        Nothing ->
+          if counter >= 2 then
+            counter
+          else
+            countScore xs 0
+        Just mx ->
+          if (color mx) == c then
+            countScore xs (counter + 1)
+          else
+            if counter >= 2 then
+              counter
+            else
+              countScore xs 0
 
 getPlayerScore :: Board -> Color -> Int
 getPlayerScore b c = countScore (map (getLineScore c) cells)

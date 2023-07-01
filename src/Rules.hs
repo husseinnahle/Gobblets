@@ -5,8 +5,8 @@ import Data.Maybe (fromJust)
 import Control.Monad (foldM)
 
 import Move (Move, Drop, OnBoard, showMove)
-import Deck (Piece(Piece), color, size)
-import State (State(State), newState, board, current, other, playDrop, playOnBoard)
+import Deck (Piece, color, size)
+import State (State, newState, board, current, other, playDrop, playOnBoard)
 import Player (color, getDeck)
 import Board (Position, emptyPositions, getPiecesOnBoard, getPiece, canInsertPiece, getAlignments, filterAlignmentsByColor)
 
@@ -18,8 +18,8 @@ applyMove :: State -> Move -> Maybe State
 applyMove state move
   | not $ moveIsValid state move = Nothing
   | otherwise = case move of
-      Left drop -> Just (playDrop state drop)
-      Right onBoard -> Just (playOnBoard state onBoard)
+      Left dropMove -> Just (playDrop state dropMove)
+      Right onboardMove -> Just (playOnBoard state onboardMove)
 
 moveIsValid :: State -> Move -> Bool
 moveIsValid state move = elem move (availableMoves state)

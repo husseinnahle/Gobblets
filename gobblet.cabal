@@ -16,7 +16,7 @@ extra-source-files:  README.md
 executable gobblet
   hs-source-dirs:      src
   main-is:             Main.hs
-  other-modules:       State, Rules, Move, Minimax
+  other-modules:       Board, Deck, Player, State, Rules, Move, Minimax
   default-language:    Haskell2010
   build-depends:       base >= 4.7 && < 5
                      , containers
@@ -37,7 +37,7 @@ executable test-rules
   hs-source-dirs:      src
   main-is:             Test.hs
   ghc-options:         -main-is Test.testRules
-  other-modules:       State, Rules, Move, Minimax
+  other-modules:       Board, Deck, Player, State, Rules, Move, Minimax
   build-depends:       base >= 4.7 && < 5
                      , containers
                      , array
@@ -48,7 +48,7 @@ executable test-minimax
   hs-source-dirs:      src
   main-is:             Test.hs
   ghc-options:         -main-is Test.testMinimax
-  other-modules:       State, Rules, Move, Minimax
+  other-modules:       Board, Deck, Player, State, Rules, Move, Minimax
   build-depends:       base >= 4.7 && < 5
                      , containers
                      , array

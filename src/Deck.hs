@@ -38,7 +38,7 @@ instance Show Deck where
   show deck = intercalate " " [show piece | piece <- getPieces deck]
 
 newDeck :: Color -> Deck
-newDeck color = Deck (replicate 3 [(Piece color size) | size <- [Big, Medium, Small, Tiny]])
+newDeck c = Deck (replicate 3 [(Piece c s) | s <- [Big, Medium, Small, Tiny]])
 
 getPieces :: Deck -> [Piece]
 getPieces (Deck pieces) = concat (map (take 1) pieces)
@@ -48,6 +48,6 @@ removePiece (Deck pieces) p = Deck (remove pieces p)
   where
     remove :: [[Piece]] -> Piece -> [[Piece]] 
     remove [] _ = []
-    remove (x:xs) p
-      | p `elem` take 1 x = drop 1 x: xs
-      | otherwise         = x: remove xs p
+    remove (x:xs) pieceToRm
+      | pieceToRm `elem` take 1 x = drop 1 x: xs
+      | otherwise         = x: remove xs pieceToRm

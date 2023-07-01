@@ -1,9 +1,8 @@
 module Main (main) where
 
-import State (State, newState, playDrop, playOnBoard, hasWinner)
+import State (State, newState, hasWinner)
 import Move (Move, getMove)
 import Rules (applyMove, availableMoves)
-import Deck (Color)
 
 playMove :: IO Move
 playMove = do
@@ -24,8 +23,7 @@ run state =
       -- putStrLn $ showAvailableMoves state
       putStrLn $ show (length $ availableMoves state) ++ " available moves"
       move <- playMove
-      let newState = applyMove state move
-      case newState of
+      case applyMove state move of
         Just new -> run new
         Nothing -> do
           putStrLn "Invalid move"

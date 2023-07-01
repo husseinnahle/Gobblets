@@ -1,4 +1,4 @@
-module Move (Move, Drop, OnBoard, getMove, showMove) where
+module Move (Move, Drop, OnBoard, getMove, showMove, parseMoves) where
 
 import Board (Position, showPosition)
 import Deck (Size(Big, Medium, Small, Tiny))
@@ -35,7 +35,7 @@ showMove (Right onBoard) = showOnBoard onBoard
 -- Parseur pour la commande drop
 dropParser :: Parser Drop
 dropParser = do
-  char '('
+  _ <- char '('
   skipMany space
   size <- do
     c <- oneOf "BMST"
@@ -44,20 +44,21 @@ dropParser = do
       'M' -> return Medium
       'S' -> return Small
       'T' -> return Tiny
+      _ -> fail "Invalid size"
   skipMany space
-  char ','
+  _ <- char ','
   skipMany space
-  char '('
+  _ <- char '('
   skipMany space
   x <- digitToInt <$> oneOf "0123"
   skipMany space
-  char ','
+  _ <- char ','
   skipMany space
   y <- digitToInt <$> oneOf "0123"
   skipMany space
-  char ')'
+  _ <- char ')'
   skipMany space
-  char ')'
+  _ <- char ')'
   skipMany space
   return (size, (x, y))
 
@@ -66,31 +67,31 @@ dropParser = do
 onBoardParser :: Parser OnBoard
 onBoardParser = do
   skipMany space
-  char '('
+  _ <- char '('
   skipMany space
-  char '('
+  _ <- char '('
   skipMany space
   x1 <- digitToInt <$> oneOf "0123"
   skipMany space
-  char ','
+  _ <- char ','
   skipMany space
   y1 <- digitToInt <$> oneOf "0123"
   skipMany space
-  char ')'
+  _ <- char ')'
   skipMany space
-  char ','
+  _ <- char ','
   skipMany space
-  char '('
+  _ <- char '('
   skipMany space
   x2 <- digitToInt <$> oneOf "0123"
   skipMany space
-  char ','
+  _ <- char ','
   skipMany space
   y2 <- digitToInt <$> oneOf "0123"
   skipMany space
-  char ')'
+  _ <- char ')'
   skipMany space
-  char ')'
+  _ <- char ')'
   skipMany space
   return ((x1, y1), (x2, y2))
 
@@ -102,6 +103,7 @@ moveParser = do
   result <- case moveType of
     "drop" -> Left <$> dropParser
     "onboard" -> Right <$> onBoardParser
+    _ -> fail "Invalid move"
   return result
 
 
@@ -114,12 +116,10 @@ getMove = do
       Left _ -> return Nothing
       Right move -> return (Just move)
 
-
--- | Lit une liste de mouvement depuis une liste.
--- Chaque élément de la liste représente un unique mouvement.
--- On fait l'hypothèse que les mouvements sont correctement représentés.
--- Si ce n'est pas le cas, cette fonction peut émettre une exception qui arrête le programme.
--- parseMoves :: [String] -> [Move]
--- parseMoves input = undefined
 parseMoves :: [String] -> [Move]
-parseMoves input = undefined
+parseMoves input = map parseMove input
+  where
+    parseMove :: String -> Move
+    parseMove str = case parse moveParser "" str of
+      Left _ -> error "Invalid move"
+      Right move -> move

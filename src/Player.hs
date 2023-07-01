@@ -10,7 +10,7 @@ instance Show Player where
   show player = show (color player)
 
 newPlayer :: Color -> Player
-newPlayer color = Player color (newDeck color)
+newPlayer c = Player c (newDeck c)
 
 showDeck :: Player -> String
 showDeck player = show (deck player)
