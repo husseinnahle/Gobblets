@@ -6,7 +6,7 @@ import Control.Monad (foldM)
 
 import Move (Move, Drop, OnBoard, showMove)
 import Deck (Piece, color, size)
-import State (State, newState, board, current, other, playDrop, playOnBoard)
+import State (State, newState, board, current, other, playDrop, playOnBoard, hasWinner)
 import Player (color, getDeck)
 import Board (Position, emptyPositions, getPiecesOnBoard, getPiece, canInsertPiece, getAlignments, filterAlignmentsByColor)
 
@@ -25,10 +25,13 @@ moveIsValid :: State -> Move -> Bool
 moveIsValid state move = elem move (availableMoves state)
 
 availableMoves :: State -> S.Set Move
-availableMoves state = S.fromList $ [Left x | x <- drops] ++ [Right y | y <- onBoards]
-  where
-    drops = availableDrops state
-    onBoards = availableOnBoards state
+availableMoves state =
+  case hasWinner state of
+    Just _ -> S.fromList []
+    Nothing -> S.fromList $ [Left x | x <- drops] ++ [Right y | y <- onBoards]
+      where
+        drops = availableDrops state
+        onBoards = availableOnBoards state
 
 availableDrops :: State -> [Drop]
 availableDrops state = [((size piece), pos) | piece <- pieces, pos <- positions, canDrop pos piece]
