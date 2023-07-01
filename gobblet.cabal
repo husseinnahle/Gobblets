@@ -1,0 +1,57 @@
+name:                gobblet
+version:             0.1.0.0
+-- synopsis:
+-- description:
+homepage:            https://github.com/githubuser/gobblet#readme
+-- license:             BSD3
+-- license-file:        LICENSE
+author:              Author name here
+maintainer:          example@example.com
+copyright:           2023 Author name here
+category:            Web
+build-type:          Simple
+cabal-version:       >=1.10
+extra-source-files:  README.md
+
+executable gobblet
+  hs-source-dirs:      src
+  main-is:             Main.hs
+  other-modules:       State, Rules, Move, Minimax
+  default-language:    Haskell2010
+  build-depends:       base >= 4.7 && < 5
+                     , containers
+                     , array
+                     , parsec
+  ghc-options:         -Wall
+                       -Wcompat
+                       -Widentities
+                       -Wincomplete-record-updates
+                       -Wincomplete-uni-patterns
+                       -Wmissing-export-lists
+                       -Wmissing-home-modules
+                       -Wpartial-fields
+                       -Wredundant-constraints
+
+
+executable test-rules
+  hs-source-dirs:      src
+  main-is:             Test.hs
+  ghc-options:         -main-is Test.testRules
+  other-modules:       State, Rules, Move, Minimax
+  build-depends:       base >= 4.7 && < 5
+                     , containers
+                     , array
+                     , parsec
+                     , directory
+
+executable test-minimax
+  hs-source-dirs:      src
+  main-is:             Test.hs
+  ghc-options:         -main-is Test.testMinimax
+  other-modules:       State, Rules, Move, Minimax
+  build-depends:       base >= 4.7 && < 5
+                     , containers
+                     , array
+                     , parsec
+                     , random
+                     , directory

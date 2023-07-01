@@ -1,0 +1,12 @@
+68
+1
+drop(B, (2,1))
+drop(B, (1,1))
+drop(M, (2,0))
+drop(B, (0,0))
+onboard((2,0), (1,0))
+drop(B, (1,2))
+drop(B, (3,1))
+onboard((1,1), (2,0))
+drop(S, (3,3))
+onboard((1,2), (3,2))
