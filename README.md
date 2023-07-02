@@ -7,3 +7,11 @@
 - Groupe     : 050
 - Session    : Été 2023
 - Auteur(s)  : Hussein Nahle (NAHH85090004)
+
+stack build
+
+stack run test-rules
+
+stack run
+
+stack exec -- haddock --html src/*.hs --hyperlinked-source --odir=docs/
