@@ -7,5 +7,3 @@
 - Groupe     : 050
 - Session    : Été 2023
 - Auteur(s)  : Hussein Nahle (NAHH85090004)
-
-Aucune extention implémenté.

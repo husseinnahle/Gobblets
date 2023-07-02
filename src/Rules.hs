@@ -1,3 +1,4 @@
+-- | Modules qui fournit les fonctions pour gérer les règles du jeu
 module Rules (availableMoves, showAvailableMoves, applyMoves, applyMove) where
 
 import qualified Data.Set as S
@@ -11,9 +12,7 @@ import Player (color, getDeck)
 import Board (Position, emptyPositions, getPiecesOnBoard, getPiece, canInsertPiece, getAlignments, filterAlignmentsByColor)
 
 
-applyMoves :: [Move] -> Maybe State
-applyMoves = foldM applyMove newState
-
+-- | Applique un mouvement à un état de jeu et retourner le nouveau état
 applyMove :: State -> Move -> Maybe State
 applyMove state move
   | not $ moveIsValid state move = Nothing
@@ -21,9 +20,15 @@ applyMove state move
       Left dropMove -> Just (playDrop state dropMove)
       Right onboardMove -> Just (playOnBoard state onboardMove)
 
+-- | Appliquer une liste de mouvement et retourner l'état final du jeu
+applyMoves :: [Move] -> Maybe State
+applyMoves = foldM applyMove newState
+
+-- | Vérifier si un mouvement est valide dans un état de jeu
 moveIsValid :: State -> Move -> Bool
 moveIsValid state move = move `elem` availableMoves state
 
+-- | Récupérer les mouvements possibles dans un état de jeu
 availableMoves :: State -> S.Set Move
 availableMoves state =
   case hasWinner state of
@@ -33,6 +38,7 @@ availableMoves state =
         drops = availableDrops state
         onBoards = availableOnBoards state
 
+-- | Récupérer les mouvements du type Drop possibles dans un état de jeu
 availableDrops :: State -> [Drop]
 availableDrops state = [(size piece, pos) | piece <- pieces, pos <- positions, canDrop pos piece]
   where
@@ -49,6 +55,7 @@ availableDrops state = [(size piece, pos) | piece <- pieces, pos <- positions, c
     canDrop :: Position -> Piece -> Bool
     canDrop = canInsertPiece (board state)
 
+-- | Récupérer les mouvements du type OnBoard possibles dans un état de jeu
 availableOnBoards :: State -> [OnBoard]
 availableOnBoards state = [(p1, p2) | p1 <- src, p2 <- dst, canDrop p1 p2 && p1 /= p2]
   where
@@ -60,6 +67,7 @@ availableOnBoards state = [(p1, p2) | p1 <- src, p2 <- dst, canDrop p1 p2 && p1 
     canDrop :: Position -> Position -> Bool
     canDrop p1 p2 = canInsertPiece (board state) p2 (fromJust (getPiece (board state) p1))
 
+-- | Afficher les mouvement possible
 showAvailableMoves :: State -> String
 showAvailableMoves state = moveToStr $ S.toList (availableMoves state)
   where
