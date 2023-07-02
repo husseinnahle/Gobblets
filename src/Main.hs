@@ -6,20 +6,19 @@ import Rules (applyMove, availableMoves)
 
 playMove :: IO Move
 playMove = do
-    putStrLn ""
-    move <- getMove
-    case move of
-      Just m -> return m
-      Nothing -> do
-        putStrLn "Invalid move"
-        playMove
+  move <- getMove
+  case move of
+    Just m -> return m
+    Nothing -> do
+      putStrLn "Invalid move"
+      playMove
 
 run :: State -> IO ()
-run state = 
+run state =
   case hasWinner state of
     Just player -> putStrLn $ show state ++ "\nWinner: " ++ show player
     Nothing -> do
-      putStrLn $ show state
+      print state
       -- putStrLn $ showAvailableMoves state
       putStrLn $ show (length $ availableMoves state) ++ " available moves"
       move <- playMove

@@ -9,12 +9,11 @@ data State = State {board :: Board, current :: Player, other :: Player}
 
 instance Show State where
   show state = 
-    let
-      turn = "Turn: Player " ++ show (current state)
-      scoreState = concat (replicate 21 " ") ++ "Score: " ++ show (score state)
-      boardStr = "\n\n" ++ show (board state) ++ "\n\n"
-      decks = (showDeck (current state)) ++ " || " ++ (showDeck (other state))
-    in (foldl1 (++) [turn, scoreState, boardStr, decks])
+    let turn = "Turn: Player " ++ show (current state)
+        scoreState = concat (replicate 21 " ") ++ "Score: " ++ show (score state)
+        boardStr = "\n\n" ++ show (board state) ++ "\n\n"
+        decks = showDeck (current state) ++ " || " ++ showDeck (other state)
+    in foldl1 (++) [turn, scoreState, boardStr, decks]
 
 newState :: State
 newState = State newBoard (newPlayer Black) (newPlayer White)

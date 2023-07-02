@@ -12,7 +12,7 @@ import Board (Position, emptyPositions, getPiecesOnBoard, getPiece, canInsertPie
 
 
 applyMoves :: [Move] -> Maybe State
-applyMoves moves = foldM applyMove newState moves
+applyMoves = foldM applyMove newState
 
 applyMove :: State -> Move -> Maybe State
 applyMove state move
@@ -22,7 +22,7 @@ applyMove state move
       Right onboardMove -> Just (playOnBoard state onboardMove)
 
 moveIsValid :: State -> Move -> Bool
-moveIsValid state move = elem move (availableMoves state)
+moveIsValid state move = move `elem` availableMoves state
 
 availableMoves :: State -> S.Set Move
 availableMoves state =
@@ -34,7 +34,7 @@ availableMoves state =
         onBoards = availableOnBoards state
 
 availableDrops :: State -> [Drop]
-availableDrops state = [((size piece), pos) | piece <- pieces, pos <- positions, canDrop pos piece]
+availableDrops state = [(size piece, pos) | piece <- pieces, pos <- positions, canDrop pos piece]
   where
     colorOther = Player.color (other state)
 
@@ -47,15 +47,15 @@ availableDrops state = [((size piece), pos) | piece <- pieces, pos <- positions,
     pieces = getDeck (current state)
 
     canDrop :: Position -> Piece -> Bool
-    canDrop position piece = canInsertPiece (board state) position piece
+    canDrop = canInsertPiece (board state)
 
 availableOnBoards :: State -> [OnBoard]
-availableOnBoards state = [(p1, p2) | p1 <- src, p2 <- dst, (canDrop p1 p2) && (p1 /= p2)]
+availableOnBoards state = [(p1, p2) | p1 <- src, p2 <- dst, canDrop p1 p2 && p1 /= p2]
   where
     colorCurrent = Player.color (current state)
     pieces = getPiecesOnBoard (board state)
     src = filter (\p -> colorCurrent == Deck.color (fromJust (getPiece (board state) p))) pieces
-    dst = ([(x, y) | x <- [0..3], y <- [0..3]])
+    dst = [(x, y) | x <- [0..3], y <- [0..3]]
 
     canDrop :: Position -> Position -> Bool
     canDrop p1 p2 = canInsertPiece (board state) p2 (fromJust (getPiece (board state) p1))
@@ -64,4 +64,4 @@ showAvailableMoves :: State -> String
 showAvailableMoves state = moveToStr $ S.toList (availableMoves state)
   where
     moveToStr [] = ""
-    moveToStr (x:xs) = (showMove x) ++ "\n" ++ (moveToStr xs)
+    moveToStr (x:xs) = showMove x ++ "\n" ++ moveToStr xs

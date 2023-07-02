@@ -22,18 +22,14 @@ getPieceInCell (x:_) = Just x
 getPieceInCellByColor :: Color -> Cell -> Maybe Piece
 getPieceInCellByColor _ [] = Nothing
 getPieceInCellByColor c (x:xs)
-  | (color x) == c = Just x
+  | color x == c = Just x
   | otherwise = getPieceInCellByColor c xs 
 
 canInsertPieceInCell :: Cell -> Piece -> Bool
 canInsertPieceInCell cell newPiece =
   case getPieceInCell cell of
     Nothing -> True
-    Just piece ->
-      if size piece < size newPiece then
-        True
-      else
-        False
+    Just piece -> size piece < size newPiece
 
 insertPieceInCell :: Cell -> Piece -> Cell
 insertPieceInCell cell piece = piece:cell 
@@ -49,7 +45,7 @@ showPosition :: Position -> String
 showPosition (x, y) = "(" ++ show x ++ ", " ++ show y ++ ")"
 
 
-data Board = Board [(Cell, Position)]
+newtype Board = Board [(Cell, Position)]
 
 instance Show Board where
   show (Board b) = intercalate "\n" (getRows cells)
@@ -61,10 +57,10 @@ instance Show Board where
       getRows cs = showRow (take 4 cs) : getRows (drop 4 cs)
 
       showRow :: [Cell] -> String
-      showRow row = concat (replicate 20 " ") ++ intercalate " " (map showCell row)
+      showRow row = concat (replicate 20 " ") ++ unwords (map showCell row)
 
 newBoard :: Board
-newBoard = Board ([([], (x, y)) | x <- [0..3], y <- [0..3]])
+newBoard = Board [([], (x, y)) | x <- [0..3], y <- [0..3]]
 
 getCell :: Board -> Position -> Cell
 getCell (Board []) _ = error "Board is empty"
@@ -92,7 +88,7 @@ insertPiece (Board board) piece position = Board (map updateCell board)
         | otherwise = (current_cell, current_position)
 
 canInsertPiece :: Board -> Position -> Piece -> Bool
-canInsertPiece board position piece = canInsertPieceInCell cell piece
+canInsertPiece board position = canInsertPieceInCell cell
   where
     cell = getCell board position
 
@@ -151,11 +147,7 @@ filterAlignmentsByColor alignments c = map (filter (sameColor c . fst)) alignmen
     sameColor otherColor cell =
       case getPieceInCell cell of
         Nothing -> False
-        Just piece ->
-          if otherColor == (color piece) then
-            True
-          else
-            False
+        Just piece -> otherColor == color piece
 
 -- Ancienne implémentation pour chercher le score d'une grille mais qui ne prend pas en conidération les pièces recouvertes
 -- getScore :: Board -> Color -> Int
@@ -167,13 +159,14 @@ filterAlignmentsByColor alignments c = map (filter (sameColor c . fst)) alignmen
 
 boardHasWinner :: Board -> Maybe Color
 boardHasWinner board
-  | (length $ filter ((==) 4 . length) blackAlignments) > 0 = Just Black
-  | (length $ filter ((==) 4 . length) whiteAlignments) > 0 = Just White
+  | not (null blackAlignments) = Just Black
+  | not (null whiteAlignments) = Just White
   | otherwise = Nothing 
   where
     alignments = getAlignments board
-    blackAlignments = filterAlignmentsByColor alignments Black
-    whiteAlignments = filterAlignmentsByColor alignments White
+    blackAlignments = filter ((==) 4 . length) $ filterAlignmentsByColor alignments Black
+    whiteAlignments = filter ((==) 4 . length) $ filterAlignmentsByColor alignments White
+
 
 getLineScore :: Color -> [Cell] -> Int
 getLineScore c cells = countScore (map (getPieceInCellByColor c) cells) 0
@@ -184,19 +177,12 @@ getLineScore c cells = countScore (map (getPieceInCellByColor c) cells) 0
       | otherwise = 0
     countScore (x:xs) counter =
       case x of
-        Nothing ->
-          if counter >= 2 then
-            counter
-          else
-            countScore xs 0
-        Just mx ->
-          if (color mx) == c then
-            countScore xs (counter + 1)
-          else
-            if counter >= 2 then
-              counter
-            else
-              countScore xs 0
+        Nothing | counter >= 2 -> counter
+                | otherwise -> countScore xs 0
+
+        Just mx | color mx == c -> countScore xs (counter + 1)
+                | counter >= 2 -> counter
+                | otherwise -> countScore xs 0
 
 getPlayerScore :: Board -> Color -> Int
 getPlayerScore b c = countScore (map (getLineScore c) cells)
@@ -212,4 +198,4 @@ getPlayerScore b c = countScore (map (getLineScore c) cells)
 
     cells = getCells $ getLines b
 
-    countScore l = (occ 2 l) + 10 * (occ 3 l)
+    countScore l = occ 2 l + 10 * occ 3 l
