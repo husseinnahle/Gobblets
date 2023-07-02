@@ -60,7 +60,7 @@ instance Show Board where
       showRow row = concat (replicate 20 " ") ++ unwords (map showCell row)
 
 newBoard :: Board
-newBoard = Board [([], (x, y)) | x <- [0..3], y <- [0..3]]
+newBoard = Board [([], (x, y)) | y <- [0..3], x <- [0..3]]
 
 getCell :: Board -> Position -> Cell
 getCell (Board []) _ = error "Board is empty"
