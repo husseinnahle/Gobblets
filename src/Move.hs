@@ -32,14 +32,19 @@ showMove :: Move -> String
 showMove (Left dropMove) = showDrop dropMove
 showMove (Right onboardMove) = showOnBoard onboardMove
 
+sepParser :: Parser String
+sepParser = 
+    do skipMany space
+       _ <- char ','
+       skipMany space
+       return ""
+
 positionParser :: Parser Position
 positionParser = 
   do _ <- char '('
      skipMany space
      x <- digitToInt <$> oneOf "0123"
-     skipMany space
-     _ <- char ','
-     skipMany space
+     _ <- sepParser
      y <- digitToInt <$> oneOf "0123"
      skipMany space
      _ <- char ')'
@@ -58,9 +63,7 @@ dropParser =
          'S' -> return Small
          'T' -> return Tiny
          _ -> fail "Invalid size"
-     skipMany space
-     _ <- char ','
-     skipMany space
+     _ <- sepParser
      postition <- positionParser
      _ <- char ')'
      skipMany space
@@ -71,9 +74,7 @@ onBoardParser =
   do _ <- char '('
      skipMany space
      postition1 <- positionParser
-     skipMany space
-     _ <- char ','
-     skipMany space
+     _ <- sepParser
      postition2 <- positionParser
      _ <- char ')'
      skipMany space
